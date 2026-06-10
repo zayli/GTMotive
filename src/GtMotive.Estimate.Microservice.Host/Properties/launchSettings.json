@@ -1,0 +1,26 @@
+{
+  "profiles": {
+    "GtMotive.Estimate.Microservice.Host": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:64880;http://localhost:64881"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://+:8080",
+        "MongoDb__ConnectionString": "mongodb://host.docker.internal:27017",
+        "MongoDb__MongoDbDatabaseName": "gtmotive-estimate"
+      },
+      "publishAllPorts": true,
+      "useSSL": false
+    }
+  }
+}

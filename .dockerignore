@@ -1,0 +1,35 @@
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/.vs/
+**/*.user
+**/*.suo
+
+# IDE / editors
+.idea/
+.vscode/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Tests, docs, samples (not needed in the image)
+**/*.md
+**/TestResults/
+
+# Docker artifacts themselves
+docker-compose*.yml
+docker-compose*.yaml
+.dockerignore
+
+# Secrets / local config
+**/secrets.dev.yaml
+**/values.dev.yaml
+**/appsettings.*.Local.json
+**/*.env
+
+# OS junk
+.DS_Store
+Thumbs.db

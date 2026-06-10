@@ -1,0 +1,15 @@
+{
+  "solution": {
+    "path": "microservice.sln",
+    "projects": [
+      "GtMotive.Estimate.Microservice.Api\\GtMotive.Estimate.Microservice.Api.csproj",
+      "GtMotive.Estimate.Microservice.ApplicationCore\\GtMotive.Estimate.Microservice.ApplicationCore.csproj",
+      "GtMotive.Estimate.Microservice.Domain\\GtMotive.Estimate.Microservice.Domain.csproj",
+      "GtMotive.Estimate.Microservice.Host\\GtMotive.Estimate.Microservice.Host.csproj",
+      "GtMotive.Estimate.Microservice.Infrastructure\\GtMotive.Estimate.Microservice.Infrastructure.csproj",
+      "..\\test\\functional\\GtMotive.Estimate.Microservice.FunctionalTests\\GtMotive.Estimate.Microservice.FunctionalTests.csproj",
+      "..\\test\\infrastructure\\GtMotive.Estimate.Microservice.InfrastructureTests\\GtMotive.Estimate.Microservice.InfrastructureTests.csproj",
+      "..\\test\\unit\\GtMotive.Estimate.Microservice.UnitTests\\GtMotive.Estimate.Microservice.UnitTests.csproj"
+    ]
+  }
+}
