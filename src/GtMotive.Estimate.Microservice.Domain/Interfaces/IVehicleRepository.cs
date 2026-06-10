@@ -1,8 +1,8 @@
 #nullable enable
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Entities;
+using GtMotive.Estimate.Microservice.Domain.ValueObjects;
 
 namespace GtMotive.Estimate.Microservice.Domain.Interfaces
 {
@@ -23,7 +23,7 @@ namespace GtMotive.Estimate.Microservice.Domain.Interfaces
         /// </summary>
         /// <param name="id">The unique identifier of the vehicle.</param>
         /// <returns>The vehicle if found; otherwise null.</returns>
-        Task<Vehicle?> GetByIdAsync(Guid id);
+        Task<Vehicle?> GetByIdAsync(VehicleId id);
 
         /// <summary>
         /// Retrieves all vehicles with Available status.
@@ -43,6 +43,6 @@ namespace GtMotive.Estimate.Microservice.Domain.Interfaces
         /// </summary>
         /// <param name="customerId">The unique identifier of the customer.</param>
         /// <returns>True if the customer has an active rental; otherwise false.</returns>
-        Task<bool> HasActiveRentalByCustomerAsync(Guid customerId);
+        Task<bool> HasActiveRentalByCustomerAsync(CustomerId customerId);
     }
 }

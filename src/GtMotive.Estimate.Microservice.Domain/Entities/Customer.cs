@@ -1,4 +1,5 @@
 ﻿using System;
+using GtMotive.Estimate.Microservice.Domain.ValueObjects;
 
 namespace GtMotive.Estimate.Microservice.Domain.Entities
 {
@@ -14,7 +15,7 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
         /// <summary>
         /// Gets the unique identifier of the customer.
         /// </summary>
-        public Guid Id { get; private set; }
+        public CustomerId Id { get; private set; }
 
         /// <summary>
         /// Gets the full name of the customer.
@@ -34,19 +35,11 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
         /// <returns>A new <see cref="Customer"/> instance.</returns>
         public static Customer Create(string name, string documentId)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new DomainException("Customer name cannot be empty.");
-            }
-
-            if (string.IsNullOrWhiteSpace(documentId))
-            {
-                throw new DomainException("Customer document ID cannot be empty.");
-            }
+            ValidateArguments(name, documentId);
 
             return new Customer
             {
-                Id = Guid.NewGuid(),
+                Id = new CustomerId(Guid.NewGuid()),
                 Name = name,
                 DocumentId = documentId.ToUpperInvariant().Trim()
             };
@@ -59,7 +52,7 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
         /// <param name="name">The full name of the customer.</param>
         /// <param name="documentId">The document identifier (DNI/NIE) of the customer.</param>
         /// <returns>A rehydrated <see cref="Customer"/> instance.</returns>
-        public static Customer Rehydrate(Guid id, string name, string documentId)
+        public static Customer Rehydrate(CustomerId id, string name, string documentId)
         {
             return new Customer
             {
@@ -67,6 +60,19 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
                 Name = name,
                 DocumentId = documentId
             };
+        }
+
+        private static void ValidateArguments(string name, string documentId)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new DomainException("Customer name cannot be empty.");
+            }
+
+            if (string.IsNullOrWhiteSpace(documentId))
+            {
+                throw new DomainException("Customer document ID cannot be empty.");
+            }
         }
     }
 }

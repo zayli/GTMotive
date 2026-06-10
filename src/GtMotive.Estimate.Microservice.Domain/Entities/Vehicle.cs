@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using GtMotive.Estimate.Microservice.Domain.Enums;
 using GtMotive.Estimate.Microservice.Domain.ValueObjects;
 
@@ -21,7 +21,7 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
         /// <summary>
         /// Gets the unique identifier of the vehicle.
         /// </summary>
-        public Guid Id { get; private set; }
+        public VehicleId Id { get; private set; }
 
         /// <summary>
         /// Gets the brand of the vehicle.
@@ -51,7 +51,7 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
         /// <summary>
         /// Gets the identifier of the customer who has rented the vehicle, or null if available.
         /// </summary>
-        public Guid? RentedByCustomerId { get; private set; }
+        public CustomerId? RentedByCustomerId { get; private set; }
 
         /// <summary>
         /// Creates a new vehicle and adds it to the fleet.
@@ -67,13 +67,12 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
 
             return new Vehicle
             {
-                Id = Guid.NewGuid(),
+                Id = new VehicleId(Guid.NewGuid()),
                 Brand = brand,
                 Model = model,
                 LicensePlate = licensePlate,
                 ManufacturingDate = manufacturingDate,
-                Status = VehicleStatus.Available,
-                RentedByCustomerId = null
+                Status = VehicleStatus.Available
             };
         }
 
@@ -89,13 +88,13 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
         /// <param name="rentedByCustomerId">The identifier of the customer who rented the vehicle, if any.</param>
         /// <returns>A rehydrated <see cref="Vehicle"/> instance.</returns>
         public static Vehicle Rehydrate(
-            Guid id,
+            VehicleId id,
             string brand,
             string model,
             LicensePlate licensePlate,
             ManufacturingDate manufacturingDate,
             VehicleStatus status,
-            Guid? rentedByCustomerId)
+            CustomerId? rentedByCustomerId)
         {
             return new Vehicle
             {
@@ -122,9 +121,9 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
         /// Marks the vehicle as rented by the specified customer.
         /// </summary>
         /// <param name="customerId">The identifier of the customer renting the vehicle.</param>
-        public void Rent(Guid customerId)
+        public void Rent(CustomerId customerId)
         {
-            if (Status == VehicleStatus.Rented)
+            if (Status is VehicleStatus.Rented)
             {
                 throw new DomainException("Vehicle is already rented.");
             }
@@ -138,7 +137,7 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
         /// </summary>
         public void Return()
         {
-            if (Status == VehicleStatus.Available)
+            if (Status is VehicleStatus.Available)
             {
                 throw new DomainException("Vehicle is not rented.");
             }
