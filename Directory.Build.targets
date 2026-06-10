@@ -22,13 +22,13 @@
         <PackageReference Update="Microsoft.Extensions.PlatformAbstractions" Version="9.0.0" />
         <PackageReference Update="Microsoft.Extensions.Caching.Abstractions" Version="9.0.0" />
         <PackageReference Update="Microsoft.Extensions.Caching.Redis" Version="9.0.0" />
-        <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+        <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
         <PackageReference Update="Microsoft.Extensions.Configuration" Version="9.0.0" />
-        <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+        <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
         <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
         <PackageReference Update="Microsoft.Extensions.Http.Polly" Version="9.0.0"/>
         <PackageReference Update="Microsoft.Extensions.Azure" Version="1.6.3" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
 
         <!-- Azure -->
         <PackageReference Update="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.2" />
@@ -78,8 +78,7 @@
         <PackageReference Update="Newtonsoft.Json" Version="12.0.2" />
         <PackageReference Update="MediatR" Version="10.0.1" />
         <PackageReference Update="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
-        <PackageReference Update="AutoMapper" Version="12.0.1" />
-        <PackageReference Update="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+        <PackageReference Update="AutoMapper" Version="15.1.1" />
         <PackageReference Update="Hellang.Middleware.ProblemDetails" Version="3.1.0" />
         <PackageReference Update="Acheve.Authentication.Events" Version="2.0.2" />
         <PackageReference Update="Swashbuckle.AspNetCore" Version="6.4.0" />
@@ -97,7 +96,7 @@
         <PackageReference Update="xunit.runner.visualstudio" Version="2.4.5" />
         <PackageReference Update="FluentAssertions" Version="7.0.0" />
         <PackageReference Update="coverlet.collector" Version="3.1.2" />
-        <PackageReference Update="Microsoft.AspNetCore.TestHost" Version="6.0.0" />
+        <PackageReference Update="Microsoft.AspNetCore.TestHost" Version="9.0.0" />
         <PackageReference Update="Acheve.TestHost" Version="3.3.0" />
         <PackageReference Update="Microsoft.Extensions.Hosting" Version="6.0.0" />
         <PackageReference Update="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
