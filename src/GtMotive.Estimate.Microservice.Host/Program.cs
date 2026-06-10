@@ -53,7 +53,6 @@ if (!builder.Environment.IsDevelopment())
     builder.Services.AddApplicationInsightsKubernetesEnricher();
 }
 
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -65,7 +64,9 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("Mo
 builder.Services.AddControllers(ApiConfiguration.ConfigureControllers)
     .WithApiControllers();
 
-builder.Services.AddBaseInfrastructure(builder.Environment.IsDevelopment());
+builder.Services
+    .AddBaseInfrastructure(builder.Environment.IsDevelopment())
+    .AddMongoPersistence();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
