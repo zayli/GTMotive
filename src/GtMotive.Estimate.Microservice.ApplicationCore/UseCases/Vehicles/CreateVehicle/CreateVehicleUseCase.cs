@@ -1,32 +1,28 @@
 using System;
 using System.Threading.Tasks;
+using GtMotive.Estimate.Microservice.Domain;
 using GtMotive.Estimate.Microservice.Domain.Entities;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
 using GtMotive.Estimate.Microservice.Domain.ValueObjects;
 
 namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.Vehicles.CreateVehicle
 {
-    /// <summary>
-    /// Use case that creates a new vehicle and adds it to the fleet.
-    /// </summary>
-    /// <remarks>
-    /// Initializes a new instance of the <see cref="CreateVehicleUseCase"/> class.
-    /// </remarks>
-    /// <param name="vehicleRepository">The vehicle repository.</param>
-    /// <param name="unitOfWork">The unit of work.</param>
-    /// <param name="outputPort">The standard output port.</param>
-    /// <param name="logger">The application logger.</param>
+    /// <summary>Adds a new vehicle to the fleet.</summary>
+    /// <param name="vehicleRepository">Vehicle repository.</param>
+    /// <param name="unitOfWork">Unit of work.</param>
+    /// <param name="outputPort">Output port.</param>
+    /// <param name="logger">Application logger.</param>
+    /// <param name="timeProvider">Clock used by the fleet age rule.</param>
     public sealed class CreateVehicleUseCase(
         IVehicleRepository vehicleRepository,
         IUnitOfWork unitOfWork,
         ICreateVehicleOutputPort outputPort,
-        IAppLogger<CreateVehicleUseCase> logger) : IUseCase<CreateVehicleInput>
+        IAppLogger<CreateVehicleUseCase> logger,
+        TimeProvider timeProvider) : IUseCase<CreateVehicleInput>
     {
-        /// <summary>
-        /// Executes the create vehicle use case.
-        /// </summary>
-        /// <param name="input">The input message.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <summary>Runs the use case.</summary>
+        /// <param name="input">Input message.</param>
+        /// <returns>Task.</returns>
         public async Task Execute(CreateVehicleInput input)
         {
             ArgumentNullException.ThrowIfNull(input);
@@ -40,7 +36,15 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.Vehicles.Creat
             var licensePlate = new LicensePlate(input.LicensePlate);
             var manufacturingDate = new ManufacturingDate(input.ManufacturingDate);
 
-            var vehicle = Vehicle.Create(input.Brand, input.Model, licensePlate, manufacturingDate);
+            if (await vehicleRepository.ExistsByLicensePlateAsync(licensePlate))
+            {
+                logger.LogWarning(
+                    "A vehicle with license plate {LicensePlate} already exists.",
+                    licensePlate.Value);
+                throw new DomainException("A vehicle with the same license plate already exists.");
+            }
+
+            var vehicle = Vehicle.Create(input.Brand, input.Model, licensePlate, manufacturingDate, timeProvider.GetUtcNow().UtcDateTime);
 
             await vehicleRepository.AddAsync(vehicle);
             await unitOfWork.Save();

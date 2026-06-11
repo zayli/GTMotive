@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using GtMotive.Estimate.Microservice.ApplicationCore.UseCases.Customers.CreateCustomer;
@@ -20,7 +20,6 @@ namespace GtMotive.Estimate.Microservice.FunctionalTests.Specs
         [Fact]
         public async Task RentVehicle_AfterCreating_ShouldMarkVehicleAsRented()
         {
-            // Arrange: seed a customer + vehicle through their use cases.
             var customerOutput = await CreateCustomerAsync("Alice", "12345678A");
             var vehicleOutput = await CreateVehicleAsync("Toyota", "Yaris", "RNT-001");
 
@@ -32,10 +31,8 @@ namespace GtMotive.Estimate.Microservice.FunctionalTests.Specs
                 rentPresenter,
                 Mock.Of<IAppLogger<RentVehicleUseCase>>());
 
-            // Act
             await rentUseCase.Execute(new RentVehicleInput(vehicleOutput.Id, customerOutput.Id));
 
-            // Assert: presenter received the standard output and Mongo state reflects the rent.
             rentPresenter.Output.Should().NotBeNull();
             rentPresenter.Output!.VehicleId.Should().Be(vehicleOutput.Id);
 
@@ -46,7 +43,6 @@ namespace GtMotive.Estimate.Microservice.FunctionalTests.Specs
         [Fact]
         public async Task RentVehicle_WhenCustomerAlreadyHasRental_ShouldThrowDomainException()
         {
-            // Arrange: a customer that already rented one vehicle.
             var customerOutput = await CreateCustomerAsync("Bob", "87654321B");
             var firstVehicle = await CreateVehicleAsync("Ford", "Focus", "RNT-002");
             var secondVehicle = await CreateVehicleAsync("Ford", "Fiesta", "RNT-003");
@@ -60,11 +56,9 @@ namespace GtMotive.Estimate.Microservice.FunctionalTests.Specs
 
             await rentUseCase.Execute(new RentVehicleInput(firstVehicle.Id, customerOutput.Id));
 
-            // Act
             Func<Task> act = async () =>
                 await rentUseCase.Execute(new RentVehicleInput(secondVehicle.Id, customerOutput.Id));
 
-            // Assert
             await act.Should()
                 .ThrowAsync<DomainException>()
                 .WithMessage("*already has an active rental*");
@@ -89,7 +83,8 @@ namespace GtMotive.Estimate.Microservice.FunctionalTests.Specs
                 fixture.VehicleRepository,
                 fixture.UnitOfWork,
                 presenter,
-                Mock.Of<IAppLogger<CreateVehicleUseCase>>());
+                Mock.Of<IAppLogger<CreateVehicleUseCase>>(),
+                TimeProvider.System);
             await useCase.Execute(new CreateVehicleInput(brand, model, plate, DateTime.UtcNow.AddYears(-1)));
             return presenter.Output;
         }

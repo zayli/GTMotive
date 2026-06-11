@@ -4,66 +4,47 @@ using GtMotive.Estimate.Microservice.Domain.ValueObjects;
 
 namespace GtMotive.Estimate.Microservice.Domain.Entities
 {
-    /// <summary>
-    /// Represents a vehicle in the rental fleet.
-    /// </summary>
+    /// <summary>A vehicle in the rental fleet.</summary>
     public sealed class Vehicle
     {
-        /// <summary>
-        /// Maximum age, in years, a vehicle can have to be part of the fleet.
-        /// </summary>
+        /// <summary>Max age (in years) for a vehicle to belong to the fleet.</summary>
         public const int MaxFleetAgeInYears = 5;
 
         private Vehicle()
         {
         }
 
-        /// <summary>
-        /// Gets the unique identifier of the vehicle.
-        /// </summary>
+        /// <summary>Gets the vehicle identifier.</summary>
         public VehicleId Id { get; private set; }
 
-        /// <summary>
-        /// Gets the brand of the vehicle.
-        /// </summary>
+        /// <summary>Gets the brand.</summary>
         public string Brand { get; private set; }
 
-        /// <summary>
-        /// Gets the model of the vehicle.
-        /// </summary>
+        /// <summary>Gets the model.</summary>
         public string Model { get; private set; }
 
-        /// <summary>
-        /// Gets the license plate of the vehicle.
-        /// </summary>
+        /// <summary>Gets the license plate.</summary>
         public LicensePlate LicensePlate { get; private set; }
 
-        /// <summary>
-        /// Gets the manufacturing date of the vehicle.
-        /// </summary>
+        /// <summary>Gets the manufacturing date.</summary>
         public ManufacturingDate ManufacturingDate { get; private set; }
 
-        /// <summary>
-        /// Gets the current rental status of the vehicle.
-        /// </summary>
+        /// <summary>Gets the current rental status.</summary>
         public VehicleStatus Status { get; private set; }
 
-        /// <summary>
-        /// Gets the identifier of the customer who has rented the vehicle, or null if available.
-        /// </summary>
+        /// <summary>Gets the renter id, or null if the vehicle is available.</summary>
         public CustomerId? RentedByCustomerId { get; private set; }
 
-        /// <summary>
-        /// Creates a new vehicle and adds it to the fleet.
-        /// </summary>
-        /// <param name="brand">The brand of the vehicle.</param>
-        /// <param name="model">The model of the vehicle.</param>
-        /// <param name="licensePlate">The license plate of the vehicle.</param>
-        /// <param name="manufacturingDate">The manufacturing date of the vehicle.</param>
-        /// <returns>A new <see cref="Vehicle"/> instance.</returns>
-        public static Vehicle Create(string brand, string model, LicensePlate licensePlate, ManufacturingDate manufacturingDate)
+        /// <summary>Creates a new vehicle and admits it into the fleet.</summary>
+        /// <param name="brand">Brand.</param>
+        /// <param name="model">Model.</param>
+        /// <param name="licensePlate">License plate.</param>
+        /// <param name="manufacturingDate">Manufacturing date.</param>
+        /// <param name="utcNow">Current UTC time (injected from the application layer).</param>
+        /// <returns>The new vehicle.</returns>
+        public static Vehicle Create(string brand, string model, LicensePlate licensePlate, ManufacturingDate manufacturingDate, DateTime utcNow)
         {
-            ValidateArguments(brand, model, manufacturingDate);
+            ValidateArguments(brand, model, manufacturingDate, utcNow);
 
             return new Vehicle
             {
@@ -76,17 +57,15 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
             };
         }
 
-        /// <summary>
-        /// Reconstructs a vehicle from its persisted state without applying admission rules.
-        /// </summary>
-        /// <param name="id">The unique identifier of the vehicle.</param>
-        /// <param name="brand">The brand of the vehicle.</param>
-        /// <param name="model">The model of the vehicle.</param>
-        /// <param name="licensePlate">The license plate of the vehicle.</param>
-        /// <param name="manufacturingDate">The manufacturing date of the vehicle.</param>
-        /// <param name="status">The current rental status of the vehicle.</param>
-        /// <param name="rentedByCustomerId">The identifier of the customer who rented the vehicle, if any.</param>
-        /// <returns>A rehydrated <see cref="Vehicle"/> instance.</returns>
+        /// <summary>Rebuilds a vehicle from persistence. Skips admission rules.</summary>
+        /// <param name="id">Vehicle id.</param>
+        /// <param name="brand">Brand.</param>
+        /// <param name="model">Model.</param>
+        /// <param name="licensePlate">License plate.</param>
+        /// <param name="manufacturingDate">Manufacturing date.</param>
+        /// <param name="status">Rental status.</param>
+        /// <param name="rentedByCustomerId">Renter id, if any.</param>
+        /// <returns>The rehydrated vehicle.</returns>
         public static Vehicle Rehydrate(
             VehicleId id,
             string brand,
@@ -108,19 +87,16 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
             };
         }
 
-        /// <summary>
-        /// Determines whether the vehicle exceeds the maximum age allowed in the fleet.
-        /// </summary>
-        /// <returns>True if the vehicle is older than the fleet age limit; otherwise false.</returns>
-        public bool ExceedsFleetAgeLimit()
+        /// <summary>True if the vehicle is older than the fleet age limit.</summary>
+        /// <param name="utcNow">Current UTC time.</param>
+        /// <returns>Whether the limit is exceeded.</returns>
+        public bool ExceedsFleetAgeLimit(DateTime utcNow)
         {
-            return IsOlderThanFleetLimit(ManufacturingDate.Value);
+            return IsOlderThanFleetLimit(ManufacturingDate.Value, utcNow);
         }
 
-        /// <summary>
-        /// Marks the vehicle as rented by the specified customer.
-        /// </summary>
-        /// <param name="customerId">The identifier of the customer renting the vehicle.</param>
+        /// <summary>Marks the vehicle as rented by the given customer.</summary>
+        /// <param name="customerId">Renter id.</param>
         public void Rent(CustomerId customerId)
         {
             if (Status is VehicleStatus.Rented)
@@ -132,9 +108,7 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
             RentedByCustomerId = customerId;
         }
 
-        /// <summary>
-        /// Marks the vehicle as returned and available for rental.
-        /// </summary>
+        /// <summary>Marks the vehicle as returned and available again.</summary>
         public void Return()
         {
             if (Status is VehicleStatus.Available)
@@ -146,12 +120,12 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
             RentedByCustomerId = null;
         }
 
-        private static bool IsOlderThanFleetLimit(DateTime manufacturingDate)
+        private static bool IsOlderThanFleetLimit(DateTime manufacturingDate, DateTime utcNow)
         {
-            return manufacturingDate < DateTime.UtcNow.AddYears(-MaxFleetAgeInYears);
+            return manufacturingDate < utcNow.AddYears(-MaxFleetAgeInYears);
         }
 
-        private static void ValidateArguments(string brand, string model, ManufacturingDate manufacturingDate)
+        private static void ValidateArguments(string brand, string model, ManufacturingDate manufacturingDate, DateTime utcNow)
         {
             if (string.IsNullOrWhiteSpace(brand))
             {
@@ -168,7 +142,7 @@ namespace GtMotive.Estimate.Microservice.Domain.Entities
                 throw new DomainException("Manufacturing date is required.");
             }
 
-            if (IsOlderThanFleetLimit(manufacturingDate.Value))
+            if (IsOlderThanFleetLimit(manufacturingDate.Value, utcNow))
             {
                 throw new DomainException("Vehicle cannot be older than 5 years to join the fleet.");
             }

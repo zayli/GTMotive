@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Entities;
@@ -43,6 +43,13 @@ namespace GtMotive.Estimate.Microservice.Domain.Interfaces
         /// </summary>
         /// <param name="customerId">The unique identifier of the customer.</param>
         /// <returns>True if the customer has an active rental; otherwise false.</returns>
-        Task<bool> HasActiveRentalByCustomerAsync(CustomerId customerId);
+        Task<bool> HasActiveRentaAsync(CustomerId customerId);
+
+        /// <summary>
+        /// Determines whether a vehicle with the given license plate already exists.
+        /// </summary>
+        /// <param name="licensePlate">The license plate to look up.</param>
+        /// <returns>True if a vehicle with that plate is already registered; otherwise false.</returns>
+        Task<bool> ExistsByLicensePlateAsync(LicensePlate licensePlate);
     }
 }

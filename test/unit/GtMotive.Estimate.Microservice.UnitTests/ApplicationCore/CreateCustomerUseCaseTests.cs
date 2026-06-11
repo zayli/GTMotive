@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using GtMotive.Estimate.Microservice.ApplicationCore.UseCases.Customers.CreateCustomer;
@@ -15,7 +15,6 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
         [Fact]
         public async Task Execute_WithValidInput_ShouldPersistAndCallStandardOutput()
         {
-            // Arrange
             var customerRepo = new Mock<ICustomerRepository>();
             var unitOfWork = new Mock<IUnitOfWork>();
             var outputPort = new Mock<ICreateCustomerOutputPort>();
@@ -26,10 +25,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
                 outputPort.Object,
                 Mock.Of<IAppLogger<CreateCustomerUseCase>>());
 
-            // Act
             await useCase.Execute(new CreateCustomerInput("Alice", "12345678A"));
 
-            // Assert
             customerRepo.Verify(r => r.AddAsync(It.IsAny<Customer>()), Times.Once);
             unitOfWork.Verify(u => u.Save(), Times.Once);
             outputPort.Verify(o => o.StandardHandle(It.Is<CreateCustomerOutput>(x => x.Name == "Alice")), Times.Once);

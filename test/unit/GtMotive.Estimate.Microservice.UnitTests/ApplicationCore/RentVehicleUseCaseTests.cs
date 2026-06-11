@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using GtMotive.Estimate.Microservice.ApplicationCore.UseCases.Vehicles.RentVehicle;
@@ -17,7 +17,6 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
         [Fact]
         public async Task Execute_WhenVehicleDoesNotExist_ShouldInvokeNotFoundOutput()
         {
-            // Arrange
             var vehicleRepo = new Mock<IVehicleRepository>();
             var customerRepo = new Mock<ICustomerRepository>();
             var unitOfWork = new Mock<IUnitOfWork>();
@@ -37,10 +36,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
 
             var input = new RentVehicleInput(Guid.NewGuid(), Guid.NewGuid());
 
-            // Act
             await useCase.Execute(input);
 
-            // Assert
             outputPort.Verify(o => o.NotFoundHandle("Vehicle not found."), Times.Once);
             outputPort.Verify(o => o.StandardHandle(It.IsAny<RentVehicleOutput>()), Times.Never);
             customerRepo.Verify(r => r.GetByIdAsync(It.IsAny<CustomerId>()), Times.Never);
@@ -50,7 +47,6 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
         [Fact]
         public async Task Execute_WhenCustomerDoesNotExist_ShouldInvokeNotFoundOutput()
         {
-            // Arrange
             var vehicleRepo = new Mock<IVehicleRepository>();
             vehicleRepo.Setup(r => r.GetByIdAsync(It.IsAny<VehicleId>())).ReturnsAsync(BuildAvailableVehicle());
             var customerRepo = new Mock<ICustomerRepository>();
@@ -66,10 +62,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
                 outputPort.Object,
                 Mock.Of<IAppLogger<RentVehicleUseCase>>());
 
-            // Act
             await useCase.Execute(new RentVehicleInput(Guid.NewGuid(), Guid.NewGuid()));
 
-            // Assert
             outputPort.Verify(o => o.NotFoundHandle("Customer not found."), Times.Once);
             unitOfWork.Verify(u => u.Save(), Times.Never);
         }
@@ -77,11 +71,9 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
         [Fact]
         public async Task Execute_WhenCustomerAlreadyHasActiveRental_ShouldThrowDomainException()
         {
-            // Arrange: customer exists, vehicle exists and is free, but the repository says
-            // the customer already rented another vehicle. The business rule must fire.
             var vehicleRepo = new Mock<IVehicleRepository>();
             vehicleRepo.Setup(r => r.GetByIdAsync(It.IsAny<VehicleId>())).ReturnsAsync(BuildAvailableVehicle());
-            vehicleRepo.Setup(r => r.HasActiveRentalByCustomerAsync(It.IsAny<CustomerId>())).ReturnsAsync(true);
+            vehicleRepo.Setup(r => r.HasActiveRentaAsync(It.IsAny<CustomerId>())).ReturnsAsync(true);
 
             var customerRepo = new Mock<ICustomerRepository>();
             customerRepo.Setup(r => r.GetByIdAsync(It.IsAny<CustomerId>())).ReturnsAsync(Customer.Create("Alice", "12345678A"));
@@ -93,10 +85,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
                 Mock.Of<IRentVehicleOutputPort>(),
                 Mock.Of<IAppLogger<RentVehicleUseCase>>());
 
-            // Act
             Func<Task> act = () => useCase.Execute(new RentVehicleInput(Guid.NewGuid(), Guid.NewGuid()));
 
-            // Assert
             await act.Should()
                 .ThrowAsync<DomainException>()
                 .WithMessage("*already has an active rental*");

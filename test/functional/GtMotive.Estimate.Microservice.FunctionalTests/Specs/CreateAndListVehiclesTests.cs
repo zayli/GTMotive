@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using GtMotive.Estimate.Microservice.ApplicationCore.UseCases.Vehicles.CreateVehicle;
@@ -17,7 +17,6 @@ namespace GtMotive.Estimate.Microservice.FunctionalTests.Specs
         [Fact]
         public async Task CreateVehicle_ThenListAvailable_ShouldReturnThePersistedVehicle()
         {
-            // Arrange
             var createPresenter = new TestCreateVehiclePresenter();
             var listPresenter = new TestGetAvailableVehiclesPresenter();
             var logger = Mock.Of<IAppLogger<CreateVehicleUseCase>>();
@@ -27,14 +26,15 @@ namespace GtMotive.Estimate.Microservice.FunctionalTests.Specs
                 fixture.VehicleRepository,
                 fixture.UnitOfWork,
                 createPresenter,
-                logger);
+                logger,
+                TimeProvider.System);
 
             var listUseCase = new GetAvailableVehiclesUseCase(
                 fixture.VehicleRepository,
                 listPresenter,
-                listLogger);
+                listLogger,
+                TimeProvider.System);
 
-            // Act
             await createUseCase.Execute(new CreateVehicleInput(
                 "Toyota",
                 "Corolla",
@@ -43,7 +43,6 @@ namespace GtMotive.Estimate.Microservice.FunctionalTests.Specs
 
             await listUseCase.Execute(new GetAvailableVehiclesInput());
 
-            // Assert
             createPresenter.Output.Should().NotBeNull();
             createPresenter.Output!.LicensePlate.Should().Be("TST-001");
 

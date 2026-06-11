@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
@@ -57,7 +57,7 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.Vehicles.RentV
                 return;
             }
 
-            if (await vehicleRepository.HasActiveRentalByCustomerAsync(customerId))
+            if (await vehicleRepository.HasActiveRentaAsync(customerId))
             {
                 logger.LogWarning(
                     "Customer {CustomerId} already has an active rental.",

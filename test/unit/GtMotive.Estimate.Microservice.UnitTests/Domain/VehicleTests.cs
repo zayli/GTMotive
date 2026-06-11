@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using FluentAssertions;
 using GtMotive.Estimate.Microservice.Domain;
 using GtMotive.Estimate.Microservice.Domain.Entities;
@@ -10,17 +10,16 @@ namespace GtMotive.Estimate.Microservice.UnitTests.Domain
 {
     public class VehicleTests
     {
+        private static readonly DateTime UtcNow = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
         [Fact]
         public void Create_WhenVehicleIsOlderThanFleetLimit_ShouldThrowDomainException()
         {
-            // Arrange: build a vehicle older than 5 years (the fleet admission rule).
-            var tooOld = new ManufacturingDate(DateTime.UtcNow.AddYears(-Vehicle.MaxFleetAgeInYears).AddDays(-1));
+            var tooOld = new ManufacturingDate(UtcNow.AddYears(-Vehicle.MaxFleetAgeInYears).AddDays(-1));
             var plate = new LicensePlate("OLD-001");
 
-            // Act
-            Action act = () => Vehicle.Create("Toyota", "Corolla", plate, tooOld);
+            Action act = () => Vehicle.Create("Toyota", "Corolla", plate, tooOld, UtcNow);
 
-            // Assert
             act.Should()
                 .Throw<DomainException>()
                 .WithMessage("*5 years*");
@@ -29,17 +28,70 @@ namespace GtMotive.Estimate.Microservice.UnitTests.Domain
         [Fact]
         public void Create_WithValidArguments_ShouldStartAsAvailable()
         {
-            // Arrange
-            var date = new ManufacturingDate(DateTime.UtcNow.AddYears(-1));
+            var date = new ManufacturingDate(UtcNow.AddYears(-1));
             var plate = new LicensePlate("ABC-123");
 
-            // Act
-            var vehicle = Vehicle.Create("Toyota", "Corolla", plate, date);
+            var vehicle = Vehicle.Create("Toyota", "Corolla", plate, date, UtcNow);
 
-            // Assert
             vehicle.Status.Should().Be(VehicleStatus.Available);
             vehicle.RentedByCustomerId.Should().BeNull();
             vehicle.Brand.Should().Be("Toyota");
         }
+
+        [Fact]
+        public void Rent_WhenVehicleIsAvailable_ShouldChangeStatusToRented()
+        {
+            var vehicle = BuildAvailableVehicle();
+            var customerId = new CustomerId(Guid.NewGuid());
+
+            vehicle.Rent(customerId);
+
+            vehicle.Status.Should().Be(VehicleStatus.Rented);
+            vehicle.RentedByCustomerId.Should().Be(customerId);
+        }
+
+        [Fact]
+        public void Rent_WhenVehicleIsAlreadyRented_ShouldThrowDomainException()
+        {
+            var vehicle = BuildAvailableVehicle();
+            vehicle.Rent(new CustomerId(Guid.NewGuid()));
+
+            Action act = () => vehicle.Rent(new CustomerId(Guid.NewGuid()));
+
+            act.Should()
+                .Throw<DomainException>()
+                .WithMessage("*already rented*");
+        }
+
+        [Fact]
+        public void Return_WhenVehicleIsRented_ShouldChangeStatusToAvailable()
+        {
+            var vehicle = BuildAvailableVehicle();
+            vehicle.Rent(new CustomerId(Guid.NewGuid()));
+
+            vehicle.Return();
+
+            vehicle.Status.Should().Be(VehicleStatus.Available);
+            vehicle.RentedByCustomerId.Should().BeNull();
+        }
+
+        [Fact]
+        public void Return_WhenVehicleIsAvailable_ShouldThrowDomainException()
+        {
+            var vehicle = BuildAvailableVehicle();
+
+            Action act = vehicle.Return;
+
+            act.Should()
+                .Throw<DomainException>()
+                .WithMessage("*not rented*");
+        }
+
+        private static Vehicle BuildAvailableVehicle() => Vehicle.Create(
+            "Toyota",
+            "Yaris",
+            new LicensePlate("AVL-001"),
+            new ManufacturingDate(UtcNow.AddYears(-1)),
+            UtcNow);
     }
 }

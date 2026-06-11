@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using GtMotive.Estimate.Microservice.ApplicationCore.UseCases.Vehicles.ReturnVehicle;
@@ -16,7 +16,6 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
         [Fact]
         public async Task Execute_WhenVehicleIsRented_ShouldMarkAvailableAndCallStandardOutput()
         {
-            // Arrange
             var rentedVehicle = Vehicle.Rehydrate(
                 new VehicleId(Guid.NewGuid()),
                 "Toyota",
@@ -37,10 +36,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
                 outputPort.Object,
                 Mock.Of<IAppLogger<ReturnVehicleUseCase>>());
 
-            // Act
             await useCase.Execute(new ReturnVehicleInput(rentedVehicle.Id.Value));
 
-            // Assert
             rentedVehicle.Status.Should().Be(VehicleStatus.Available);
             vehicleRepo.Verify(r => r.UpdateAsync(rentedVehicle), Times.Once);
             outputPort.Verify(o => o.StandardHandle(It.IsAny<ReturnVehicleOutput>()), Times.Once);
@@ -50,7 +47,6 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
         [Fact]
         public async Task Execute_WhenVehicleDoesNotExist_ShouldCallNotFoundOutput()
         {
-            // Arrange
             var vehicleRepo = new Mock<IVehicleRepository>();
             vehicleRepo.Setup(r => r.GetByIdAsync(It.IsAny<VehicleId>())).ReturnsAsync((Vehicle)null);
             var unitOfWork = new Mock<IUnitOfWork>();
@@ -62,10 +58,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
                 outputPort.Object,
                 Mock.Of<IAppLogger<ReturnVehicleUseCase>>());
 
-            // Act
             await useCase.Execute(new ReturnVehicleInput(Guid.NewGuid()));
 
-            // Assert
             outputPort.Verify(o => o.NotFoundHandle("Vehicle not found."), Times.Once);
             vehicleRepo.Verify(r => r.UpdateAsync(It.IsAny<Vehicle>()), Times.Never);
             unitOfWork.Verify(u => u.Save(), Times.Never);

@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -60,12 +60,23 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
                 .ConfigureAwait(false);
         }
 
-        public async Task<bool> HasActiveRentalByCustomerAsync(CustomerId customerId)
+        public async Task<bool> HasActiveRentaAsync(CustomerId customerId)
         {
             var key = customerId.Value.ToString();
             var rentedStatus = VehicleStatus.Rented.ToString();
             var count = await collection
                 .CountDocumentsAsync(x => x.RentedByCustomerId == key && x.Status == rentedStatus)
+                .ConfigureAwait(false);
+
+            return count > 0;
+        }
+
+        public async Task<bool> ExistsByLicensePlateAsync(LicensePlate licensePlate)
+        {
+            ArgumentNullException.ThrowIfNull(licensePlate);
+            var plate = licensePlate.Value;
+            var count = await collection
+                .CountDocumentsAsync(x => x.LicensePlate == plate)
                 .ConfigureAwait(false);
 
             return count > 0;

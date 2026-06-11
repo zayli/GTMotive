@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using GtMotive.Estimate.Microservice.ApplicationCore.UseCases.Vehicles.GetAvailableVehicles;
@@ -13,11 +13,12 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
 {
     public class GetAvailableVehiclesUseCaseTests
     {
+        private static readonly DateTime UtcNow = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
         [Fact]
         public async Task Execute_ShouldReturnVehiclesFromRepository()
         {
-            // Arrange
-            var fresh = BuildVehicle(DateTime.UtcNow.AddYears(-2));
+            var fresh = BuildVehicle(UtcNow.AddYears(-2));
             var vehicleRepo = new Mock<IVehicleRepository>();
             vehicleRepo.Setup(r => r.GetAvailableAsync()).ReturnsAsync([fresh]);
 
@@ -25,12 +26,11 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
             var useCase = new GetAvailableVehiclesUseCase(
                 vehicleRepo.Object,
                 outputPort,
-                Mock.Of<IAppLogger<GetAvailableVehiclesUseCase>>());
+                Mock.Of<IAppLogger<GetAvailableVehiclesUseCase>>(),
+                new FixedTimeProvider(UtcNow));
 
-            // Act
             await useCase.Execute(new GetAvailableVehiclesInput());
 
-            // Assert
             outputPort.Captured.Should().NotBeNull();
             outputPort.Captured!.Vehicles.Should().ContainSingle();
         }
@@ -38,14 +38,12 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
         [Fact]
         public async Task Execute_ShouldFilterOutVehiclesExceedingFleetAgeLimit()
         {
-            // Arrange: a rehydrated vehicle older than 5 years (admission rule does not apply
-            // when rehydrating, but the listing must hide it).
             var aged = Vehicle.Rehydrate(
                 new VehicleId(Guid.NewGuid()),
                 "Old",
                 "Model",
                 new LicensePlate("OLD-X"),
-                new ManufacturingDate(DateTime.UtcNow.AddYears(-Vehicle.MaxFleetAgeInYears - 1)),
+                new ManufacturingDate(UtcNow.AddYears(-Vehicle.MaxFleetAgeInYears - 1)),
                 VehicleStatus.Available,
                 null);
 
@@ -56,12 +54,11 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
             var useCase = new GetAvailableVehiclesUseCase(
                 vehicleRepo.Object,
                 outputPort,
-                Mock.Of<IAppLogger<GetAvailableVehiclesUseCase>>());
+                Mock.Of<IAppLogger<GetAvailableVehiclesUseCase>>(),
+                new FixedTimeProvider(UtcNow));
 
-            // Act
             await useCase.Execute(new GetAvailableVehiclesInput());
 
-            // Assert
             outputPort.Captured!.Vehicles.Should().BeEmpty();
         }
 
@@ -69,7 +66,13 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
             "Toyota",
             "Yaris",
             new LicensePlate("AVL-001"),
-            new ManufacturingDate(manufacturingDate));
+            new ManufacturingDate(manufacturingDate),
+            UtcNow);
+
+        private sealed class FixedTimeProvider(DateTime utcNow) : TimeProvider
+        {
+            public override DateTimeOffset GetUtcNow() => new(utcNow, TimeSpan.Zero);
+        }
 
         private sealed class TestPresenter : IGetAvailableVehiclesOutputPort
         {

@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using GtMotive.Estimate.Microservice.ApplicationCore.UseCases.Customers.GetAllCustomers;
@@ -14,7 +14,6 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
         [Fact]
         public async Task Execute_ShouldReturnAllCustomersFromRepository()
         {
-            // Arrange
             var alice = Customer.Create("Alice", "12345678A");
             var bob = Customer.Create("Bob", "87654321B");
             var customerRepo = new Mock<ICustomerRepository>();
@@ -26,10 +25,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore
                 outputPort,
                 Mock.Of<IAppLogger<GetAllCustomersUseCase>>());
 
-            // Act
             await useCase.Execute(new GetAllCustomersInput());
 
-            // Assert
             outputPort.Captured.Should().NotBeNull();
             outputPort.Captured!.Customers.Should().HaveCount(2);
             outputPort.Captured.Customers.Select(c => c.Name).Should().Contain(["Alice", "Bob"]);
