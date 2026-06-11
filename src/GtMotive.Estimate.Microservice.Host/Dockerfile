@@ -44,4 +44,5 @@ RUN dotnet publish "GtMotive.Estimate.Microservice.Host.csproj" -c Release -o /a
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+USER $APP_UID
 ENTRYPOINT ["dotnet", "GtMotive.Estimate.Microservice.Host.dll"]
